@@ -6,21 +6,48 @@ import PyQt5.QtCore
 import sys
 import time
 import _thread
+import json
+import random
+
+
+SayingList = []
+
+
+with open('Image\\Config.json','r',encoding='utf-8') as con:
+    SayingList = json.load(con)["Sayings"]
+
+
+class AboutWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.UIinit()
+    
+    def UIinit(self):
+        l = QLabel("简易桌面宠物(V1.00) By千里扯淡 2021.7")
+        self.setWindowTitle('关于')
+        self.setWindowIcon(QIcon('icon.png'))
+        grid = QGridLayout()
+        grid.addWidget(l, 0, 0)
+        self.setLayout(grid) 
+        self.setGeometry(300, 300, 450, 300)
 
 
 class TaryIcon(object):
+    
+    ap = QApplication(sys.argv)
+    a_w = AboutWindow()
+    
     def __init__(self, w):
         super().__init__()
         self.w = w
         self.app = app
         self.tp = QSystemTrayIcon(self.w)
-        #self.activated.connect(self.activate)
         self.init()
         self.run(0,0)
-        #_thread.start_new_thread(self.run, (0,0))
     
     def init(self):
-        self.tp.setIcon(QIcon('d:\\12.png'))
+        self.tp.setToolTip(SayingList[random.randint(0,len(SayingList) - 1)])
+        self.tp.setIcon(QIcon('icon.png'))
         self.tp.show()
         
     def act(self, reason):
@@ -33,13 +60,15 @@ class TaryIcon(object):
     def run(self,a,b):
         a1 = QAction('&显示',triggered=self.w.show)
         a2 = QAction('&退出',triggered=QCoreApplication.instance().quit)
+        a3 = QAction('&关于',triggered=self.a_w.show)
         tpMenu = QMenu()
         tpMenu.addAction(a1)
         tpMenu.addAction(a2)
+        tpMenu.addAction(a3)
         self.tp.setContextMenu(tpMenu)
         self.tp.show()
         self.tp.activated.connect(self.act)
-        sys.exit(self.app.exec_())  # 持续对app的连接
+        sys.exit(self.app.exec_())
 
 
 class Zc_MainWindow(QWidget):
@@ -63,9 +92,7 @@ class Zc_MainWindow(QWidget):
         ImgLabel.setPixmap(FirstFrame)
         ImgLabel.setScaledContents(True)
         
-        '''btn = QPushButton('Exit', self)
-        btn.clicked.connect(QCoreApplication.instance().quit)
-        btn.resize(btn.sizeHint())'''
+        self.setToolTip(SayingList[random.randint(0,len(SayingList) - 1)])
         
         grid = QGridLayout()
         grid.addWidget(ImgLabel, 0, 0)
@@ -73,13 +100,10 @@ class Zc_MainWindow(QWidget):
         self.setLayout(grid) 
         self.setGeometry(300, 300, 450, 300)    
         self.show()
-        #print('init finish')
         _thread.start_new_thread(self.Play, (633,0.03))
         self.tray(1,2)
-        #_thread.start_new_thread(self.tray, (0,0))
         
     def Play(self, count, fps):
-        #print('play')
         while True:
             for i in range(count):
                 Frame = QPixmap('Image\\' + str(i).zfill(5))
@@ -113,11 +137,9 @@ class Zc_MainWindow(QWidget):
     def tray(self ,a ,b):
         tr = TaryIcon(self)
 
-        
+       
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
     ex = Zc_MainWindow()
-    #ex1 = TaryIcon()
-    _thread.start_new_thread(ex.Play, (633, 0.03))
     sys.exit(app.exec_())
